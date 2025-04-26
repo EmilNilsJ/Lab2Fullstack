@@ -43,12 +43,12 @@ async function seed() {
         employee_id: emp.employee_id,
         project_code: projects[idx].project_code,
         start_date: new Date()
-      }));
-      await ProjectAssignment.create(assignments);
-    
-      console.log('Seed data completed');
-      await mongoose.disconnect();
-      console.log('Disconnected');
-    }
-    
-    seed().catch(err => console.error(err));
+    }));
+    await ProjectAssignment.create(assignments);
+
+    console.log('Seed data completed');
+    await mongoose.disconnect();
+    console.log('Disconnected');
+}
+
+seed().catch(err => console.error(err));

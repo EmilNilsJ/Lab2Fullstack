@@ -58,24 +58,34 @@ app.post('/api/projects', async (req, res) => {
 
 // POST Assign employee to project
 app.post('/api/project_assignments', async (req, res) => {
-    const { employee_id, project_code, start_date } = req.body;
-    if (!employee_id || !project_code || !start_date) {
-        return res.status(400).json({ error: 'Missing required fields.' });
-    }
-    const emp = await Employee.findOne({ employee_id });
-    const proj = await Project.findOne({ project_code });
-    if (!emp || !proj) {
-        return res.status(404).json({ error: 'Employee or Project not found.' });
-    }
     try {
-        const assignment = new ProjectAssignment({ employee_id, project_code, start_date: new Date(start_date) });
-        await assignment.save();
-        res.status(201).json(assignment);
-    } catch (err) {
-        if (err.code === 11000) {
-            return res.status(409).json({ error: 'Assignment already exists.' });
+        const { employee_id, project_code, start_date } = req.body;
+        if (!employee_id || !project_code || !start_date) {
+            return res.status(400).json({ error: 'Missing required fields.' });
         }
-        res.status(500).json({ error: 'Server error.' });
+
+        const emp = await Employee.findOne({ employee_id });
+        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
+
+        const proj = await Project.findOne({ project_code });
+        if (!proj) return res.status(404).json({ error: 'Project not found.' });
+
+        const assignment = new ProjectAssignment({
+            employee_id,
+            project_code,
+            start_date: new Date(start_date)
+        });
+        await assignment.save();
+
+        res.status(201).json({
+            employee_id,
+            project_code,
+            start_date: assignment.start_date
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Server error.', details: err.message });
     }
 });
 
@@ -83,11 +93,22 @@ app.post('/api/project_assignments', async (req, res) => {
 app.get('/api/project_assignments', async (req, res) => {
     try {
         const assignments = await ProjectAssignment.find()
-            .populate('employee_id')
-            .populate('project_code')
+            .populate({
+                path: 'employee_id',
+                model: 'Employee',
+                localField: 'employee_id',
+                foreignField: 'employee_id'
+            })
+            .populate({
+                path: 'project_code',
+                model: 'Project',
+                localField: 'project_code',
+                foreignField: 'project_code'
+            })
             .exec();
         res.json(assignments);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Server error.' });
     }
 });
@@ -97,4 +118,4 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
