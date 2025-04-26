@@ -2,7 +2,7 @@
   max-width: 900px;
   margin: 2rem auto;
   padding: 0 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: sans-serif;
   color: #333;
 }
 
@@ -19,7 +19,6 @@
   border-radius: 1px;
 }
 
-/* Table reset + shadow */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -29,7 +28,6 @@ table {
   overflow: hidden;
 }
 
-/* Header */
 th {
   background-color: #f4f4f6;
   padding: 0.75rem 1rem;
@@ -40,29 +38,25 @@ th {
   position: relative;
 }
 
-/* Sort arrows spacing */
 th span {
   margin-left: 0.5rem;
   font-size: 0.85em;
 }
 
-/* Rows */
+/* Rws */
 td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #ececec;
 }
 
-/* Zebra striping */
 tbody tr:nth-child(even) {
   background-color: #fafafa;
 }
 
-/* Hover highlight */
 tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-/* Responsive smaller text on mobile */
 @media (max-width: 600px) {
   .App h1 {
     font-size: 1.5rem;
