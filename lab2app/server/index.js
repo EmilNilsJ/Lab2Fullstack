@@ -62,7 +62,6 @@ app.post('/api/project_assignments', async (req, res) => {
     if (!employee_id || !project_code || !start_date) {
         return res.status(400).json({ error: 'Missing required fields.' });
     }
-    // Validate references
     const emp = await Employee.findOne({ employee_id });
     const proj = await Project.findOne({ project_code });
     if (!emp || !proj) {
