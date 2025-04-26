@@ -1,121 +1,34 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const Employee = require('./models/Employee');
-const Project = require('./models/Project');
-const ProjectAssignment = require('./models/ProjectAssignment');
+
+const employeesRouter = require('./routes/employeeRoute');
+const projectsRouter = require('./routes/projectRoute');
+const assignRouter = require('./routes/assignmentRoute');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
-mongoose.connect(process.env.CONNECTION_STRING).then(() => console.log('MongoDB connected'))
+
+mongoose.connect(process.env.CONNECTION_STRING)
+    .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
+
+app.use('/api/employees', employeesRouter);
+app.use('/api/projects', projectsRouter);
+app.use('/api/project_assignments', assignRouter);
 
 const buildPath = path.join(__dirname, '../app/build');
 app.use(express.static(buildPath));
+app.get(/.*/, (req, res) =>
+    res.sendFile(path.join(buildPath, 'index.html'))
+);
 
-
-// POST Add new employee
-app.post('/api/employees', async (req, res) => {
-    const { employee_id, full_name, email, password } = req.body;
-    if (!employee_id || !full_name || !email || !password) {
-        return res.status(400).json({ error: 'Missing required fields.' });
-    }
-    try {
-        const hashed = await bcrypt.hash(password, 10);
-        const newEmp = new Employee({ employee_id, full_name, email, hashed_password: hashed });
-        await newEmp.save();
-        res.status(201).json(newEmp);
-    } catch (err) {
-        if (err.code === 11000) {
-            return res.status(409).json({ error: 'Employee ID or email already exists.' });
-        }
-        res.status(500).json({ error: 'Server error.' });
-    }
-});
-
-// POST Add new project
-app.post('/api/projects', async (req, res) => {
-    const { project_code, project_name, project_description } = req.body;
-    if (!project_code || !project_name) {
-        return res.status(400).json({ error: 'Missing required fields.' });
-    }
-    try {
-        const newProj = new Project({ project_code, project_name, project_description });
-        await newProj.save();
-        res.status(201).json(newProj);
-    } catch (err) {
-        if (err.code === 11000) {
-            return res.status(409).json({ error: 'Project code already exists.' });
-        }
-        res.status(500).json({ error: 'Server error.' });
-    }
-});
-
-// POST Assign employee to project
-app.post('/api/project_assignments', async (req, res) => {
-    try {
-        const { employee_id, project_code, start_date } = req.body;
-        if (!employee_id || !project_code || !start_date) {
-            return res.status(400).json({ error: 'Missing required fields.' });
-        }
-
-        const emp = await Employee.findOne({ employee_id });
-        if (!emp) return res.status(404).json({ error: 'Employee not found.' });
-
-        const proj = await Project.findOne({ project_code });
-        if (!proj) return res.status(404).json({ error: 'Project not found.' });
-
-        const assignment = new ProjectAssignment({
-            employee_id,
-            project_code,
-            start_date: new Date(start_date)
-        });
-        await assignment.save();
-
-        res.status(201).json({
-            employee_id,
-            project_code,
-            start_date: assignment.start_date
-        });
-
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Server error.', details: err.message });
-    }
-});
-
-// GET List all assignments with populated data
-app.get('/api/project_assignments', async (req, res) => {
-    try {
-        const assignments = await ProjectAssignment.find()
-            .populate({
-                path: 'employee_id',
-                model: 'Employee',
-                localField: 'employee_id',
-                foreignField: 'employee_id'
-            })
-            .populate({
-                path: 'project_code',
-                model: 'Project',
-                localField: 'project_code',
-                foreignField: 'project_code'
-            })
-            .exec();
-        res.json(assignments);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error.' });
-    }
-});
-
-// Catch-all to serve React app
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-});
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () =>
+    console.log(`Server running on port ${PORT}`)
+);
