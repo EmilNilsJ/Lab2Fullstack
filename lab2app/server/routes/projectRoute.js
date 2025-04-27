@@ -2,6 +2,7 @@ const express = require('express');
 const Project = require('../models/Project');
 const router = express.Router();
 
+//POST create new project
 router.post('/', async (req, res) => {
     const { project_code, project_name, project_description } = req.body;
     if (!project_code || !project_name)

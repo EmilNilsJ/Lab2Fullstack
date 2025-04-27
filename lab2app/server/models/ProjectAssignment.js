@@ -17,10 +17,5 @@ const assignmentSchema = new mongoose.Schema({
     }
 });
 
-assignmentSchema.index(
-    {
-        employee_id: 1, project_code: 1
-    }, { unique: true }
-);
 
 module.exports = mongoose.model('ProjectAssignment', assignmentSchema);

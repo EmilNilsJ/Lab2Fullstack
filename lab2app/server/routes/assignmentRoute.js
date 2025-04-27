@@ -4,11 +4,13 @@ const Project = require('../models/Project');
 const ProjectAssignment = require('../models/ProjectAssignment');
 const router = express.Router();
 
+//POST assign employee to project
 router.post('/', async (req, res) => {
     const { employee_id, project_code, start_date } = req.body;
     if (!employee_id || !project_code || !start_date)
         return res.status(400).json({ error: 'Missing required fields.' });
 
+    //Check if both exists
     const emp = await Employee.findOne({ employee_id });
     const proj = await Project.findOne({ project_code });
     if (!emp || !proj)
@@ -31,6 +33,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Server error.', details: err.message });
 });
 
+//GET list all project assignments with a simplified data field
 router.get('/', async (req, res) => {
     try {
         const assignments = await ProjectAssignment.find()
@@ -47,7 +50,8 @@ router.get('/', async (req, res) => {
                 foreignField: 'project_code'
             })
             .exec();
-
+        
+        //Map to only the fields needed for frontend
         const simplified = assignments.map(a => ({
             _id: a._id,
             employee_id: a.employee_id.employee_id,

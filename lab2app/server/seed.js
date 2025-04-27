@@ -10,12 +10,13 @@ async function seed() {
     await mongoose.connect(process.env.CONNECTION_STRING);
     console.log('Connected to MongoDB Atlas');
 
+    //Clear previous data
     await Promise.all([
         Employee.deleteMany({}),
         Project.deleteMany({}),
         ProjectAssignment.deleteMany({})
     ]);
-
+    //Sample employees
     const rawEmployees = [
         { employee_id: 'E001', full_name: 'Alice Johnson', email: 'alice@example.com', password: 'pass123' },
         { employee_id: 'E002', full_name: 'Bob Smith', email: 'bob@example.com', password: 'pass123' },
@@ -23,14 +24,14 @@ async function seed() {
         { employee_id: 'E004', full_name: 'David Brown', email: 'david@example.com', password: 'pass123' },
         { employee_id: 'E005', full_name: 'Eve Wilson', email: 'eve@example.com', password: 'pass123' }
     ];
-
+    //Hashing password
     const employees = await Promise.all(
         rawEmployees.map(async ({ password, ...emp }) => {
             const hashed = await bcrypt.hash(password, 10);
             return Employee.create({ ...emp, hashed_password: hashed });
         })
     );
-
+    //Sample projects
     const projects = await Project.create([
         { project_code: 'P100', project_name: 'Project Apollo', project_description: 'Landing humans on the moon.' },
         { project_code: 'P101', project_name: 'Project Zephyr', project_description: 'High-speed wind tunnels.' },
@@ -38,7 +39,7 @@ async function seed() {
         { project_code: 'P103', project_name: 'Project Phoenix', project_description: 'Rebirth of legacy systems.' },
         { project_code: 'P104', project_name: 'Project Atlas', project_description: 'Global mapping platform.' }
     ]);
-
+    //Create assignment using String IDs
     const assignments = employees.map((emp, idx) => ({
         employee_id: emp.employee_id,
         project_code: projects[idx].project_code,

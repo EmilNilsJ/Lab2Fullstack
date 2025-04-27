@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
+//Define columns and labels for table headers
 const columns = [
   { key: 'employee_id', label: 'Employee ID' },
   { key: 'full_name', label: 'Employee Name' },
@@ -12,6 +13,7 @@ export default function ProjectAssignments() {
   const [sortKey, setSortKey] = useState('start_date');
   const [sortOrder, setSortOrder] = useState('desc');
 
+  //Fetch and log assignments from backend
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch('http://localhost:5000/api/project_assignments');
@@ -24,12 +26,14 @@ export default function ProjectAssignments() {
     }
   }, []);
 
+  //Initial load, refreshes every minute
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, [fetchData]);
 
+  //Sort the table and show the top 5 of that sorting way
   const sorted = [...data].sort((a, b) => {
     let aVal = a[sortKey];
     let bVal = b[sortKey];
